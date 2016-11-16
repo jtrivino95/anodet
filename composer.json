@@ -1,0 +1,22 @@
+{
+    "name": "anodet/core",
+    "require": {
+        "simplon/mysql": "^1.3",
+        "greenlion/php-sql-parser": "^4.1",
+        "monolog/monolog": "^1.21"
+    },
+    "autoload": {
+        "psr-4": {
+            "": "src/"
+        },
+        "classmap": [
+            "app/AppKernel.php"
+        ]
+    },
+    "authors": [
+        {
+            "name": "Moein Akbarof",
+            "email": "moein.akbarof@trivago.com"
+        }
+    ]
+}
