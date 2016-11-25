@@ -15,7 +15,7 @@ class Action
     const STATUS_NOTIFIED  = 9;
 
     public $id;
-    public $categoryHash;
+    public $sourceType;
     /** @var \DateTime */
     public $datetime;
     public $status = self::STATUS_RAW;
@@ -33,23 +33,23 @@ class Action
     public function serialize()
     {
         return [
-            'categoryHash' => $this->categoryHash,
-            'datetime'     => $this->datetime->format('Y-m-d H:i:s'),
-            'status'       => $this->status,
-            'detail'       => serialize($this->detail),
-            'behavior'     => serialize($this->behavior),
-            'result'       => serialize($this->result),
+            'sourceType' => $this->sourceType,
+            'datetime' => $this->datetime->format('Y-m-d H:i:s'), // Datetime of what??
+//            'status'       => $this->status,
+            'detail' => ($this->detail),
+            'behavior' => ($this->behavior),
+            'result' => ($this->result),
         ];
     }
 
     public function unserialize($data)
     {
-        $this->id = $data['id'];
-        $this->categoryHash = $data['categoryHash'];
-        $this->datetime = new \DateTime($data['datetime']);
-        $this->status = (int) $data['status'];
-        $this->detail = $data['detail'] ? unserialize($data['detail']) : null;
-        $this->behavior = $data['behavior'] ? unserialize($data['behavior']) : null;
-        $this->result = $data['result'] ? unserialize($data['result']) : null;
+//        $this->id =             array_key_exists('id',$data) ? $data['id'] : $this->id;
+//        $this->datetime =       new \DateTime($data['datetime']);
+        $this->datetime = new \DateTime();
+//        $this->status =         (int) $data['status'];
+        $this->detail = array_key_exists('detail', $data) ? ($data['detail']) : $this->detail;
+        $this->behavior = array_key_exists('behavior', $data) ? ($data['behavior']) : $this->behavior;
+        $this->result = array_key_exists('result', $data) ? ($data['result']) : $this->result;
     }
 }

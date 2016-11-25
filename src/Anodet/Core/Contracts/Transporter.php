@@ -9,12 +9,6 @@ interface Transporter
     /**
      * @return Action[]
      */
-    public function initialFetch();
+    public function fetch();
 
-    /**
-     * @param \DateTime $from
-     * @param \DateTime $to
-     * @return Action[]
-     */
-    public function fetch(\DateTime $from, \DateTime $to);
 }
