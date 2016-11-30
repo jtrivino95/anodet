@@ -66,7 +66,7 @@ class Database
      * @param $value
      * @return Action[]
      */
-    public function getActionsBy($column, $value)
+    public function getActionsWhere($column, $value)
     {
 
         $actions = [];
@@ -81,5 +81,13 @@ class Database
 
         return $actions;
 
+    }
+
+
+    public function getSourcesProperties()
+    {
+        $rows = $this->connection->fetchRowMany("SELECT * FROM Source");
+
+        return $rows;
     }
 }

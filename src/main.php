@@ -8,24 +8,23 @@
 
 namespace Anodet;
 
-use Anodet\Core\Implementations\Transporters\UptimeTransporter;
-use Anodet\Core\Implementations\Transporters\AccessLogTransporter;
+use Anodet\Core\Database\Database;
+use Anodet\Core\Value\Source;
 
 require_once __DIR__ . "/../vendor/autoload.php";
 
 
-$transporter1 = new UptimeTransporter();
-$actions1 = $transporter1->fetch();
+$db = new Database(['host' => 'localhost', 'user' => 'root', 'password' => '', 'name' => 'anodet']);
 
-$transporter2 = new AccessLogTransporter();
-$transporter2->setPath('/var/log/apache2/access.log'); // WARNING, DUE TO ROTATION THE FILE CAN CHANGE
-$actions2 = $transporter2->fetch();
 
-$actions = array_merge($actions1, $actions2);
+$sourceProperties = $db->getSourcesProperties()[0];
+$source = new Source();
+$source->unserialize($sourceProperties);
 
-var_dump($actions);
 
-// send actions to analyzer
-
+$alt = $source->getTransporter();
+$actionsList = $alt->fetch();
+//var_dump($actionsList[0]->detail);
+var_dump($actionsList);
 
 ?>

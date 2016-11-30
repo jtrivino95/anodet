@@ -8,15 +8,22 @@
 
 namespace Anodet\Core\Implementations\Transporters;
 
-use Anodet\Core\Value\Action;
+
 
 class UptimeTransporter extends BaseTransporter
 {
 
-    public function fetch()
-    {
-        $this->rawData = `uptime`;
+    private $hasBeenRun = false;
 
+    public function hasNext()
+    {
+        return !$this->hasBeenRun;
+    }
+
+    public function getNext()
+    {
+        $this->hasBeenRun = true;
+        $data = shell_exec("uptime");
         $regex = '
                 /^\s*
                 (?<time>[0-9]+:[0-9]+:?[0-9]+)
@@ -30,11 +37,12 @@ class UptimeTransporter extends BaseTransporter
                 (?<load_avg3>[0-9]+.[0-9]+)
                 $/x
         ';
+        $clean = $this->parseWithRegex($data, $regex);
+        $newAction = $this->createAction($clean);
+        return $newAction;
+    }
 
-        $clean = $this->parseWithRegex($regex);
-
-        $actions[] = $this->createAction($clean);
-
-        return $actions;
+    public function prepare()
+    {
     }
 }
