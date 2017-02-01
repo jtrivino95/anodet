@@ -1,5 +1,5 @@
 /vendor
 /.idea
-/log
 /app/config/parameters.yml
 /app/config/modules.yml
+app/log/
