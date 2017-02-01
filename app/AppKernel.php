@@ -1,6 +1,5 @@
 <?php
 
-use Anodet\Core\Contracts\Notifier;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -30,32 +29,5 @@ class AppKernel
     public function boot()
     {
         $this->container->get('manager')->run();
-    }
-
-    public function create($code)
-    {
-
-        $builder = $this->container->get('builder')->newCode($code);
-    }
-
-    public function remove($code)
-    {
-        $builder = $this->container->get('builder')->deleteModule($code);
-    }
-
-    public function initialize($code)
-    {
-        $this->container->get('builder')->initializeModulesAttributes($code);
-    }
-
-    public function check($code)
-    {
-
-        $this->container->get('builder')->check($code);
-    }
-
-    public function checkall()
-    {
-        $this->container->get('builder')->checkall();
     }
 }

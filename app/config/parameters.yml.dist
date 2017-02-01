@@ -1,0 +1,12 @@
+parameters:
+    slack_config:
+        username:       ~
+        channel:        ~
+    slack_hook:         ~
+
+    database_name:      ~
+    database_host:      ~
+    database_user:      ~
+    database_password:  ~
+
+    monolog_handler_path: %root_dir%/app/log/app.log

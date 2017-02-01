@@ -24,3 +24,9 @@ services:
                   - "%database_user%"
                   - "%database_password%"
                   - "%database_name%"
+
+
+    #-----------------------Notifiers-----------------------
+    slack.notifier:
+        class:      Anodet\Implementation\Notifier\SlackNotifier
+        arguments:  ["@slack_client","@logger"]
