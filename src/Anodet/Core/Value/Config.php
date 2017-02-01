@@ -2,13 +2,22 @@
 
 namespace Anodet\Core\Value;
 
+
 class Config
 {
-    const CODE_LAST_FETCH = 'last_fetch';
+    const CONFIG_CLASSES_ROOT = 'Anodet\\Implementation\\Config';
 
-    /** @var int */
-    public $sourceId;
+    public function __construct(array $config)
+    {
+        foreach ($config as $field => $value) {
+            $this->$field = $value;
+        }
+    }
 
-    /** @var \DateTime */
-    public $lastFetch;
+    // todo necessary?
+//    protected function setRelation(&$config, $class, $field)
+//    {
+//        $this->$field = new $class($config[$field]);
+//        unset($config[$field]);
+//    }
 }

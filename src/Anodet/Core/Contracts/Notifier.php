@@ -2,14 +2,20 @@
 
 namespace Anodet\Core\Contracts;
 
-use Anodet\Core\Value\Decision;
+use Anodet\Core\Value\Notification;
 
 interface Notifier
 {
+    const NOTIFIERS = [
+        'slack' => 'slack.notifier',
+        'mail' => 'mail.notifier',
+    ];
+
     /**
-     * @param Decision $decision
+     * Send the decision info via $decision->getChannel()
+     * @param Notification $decision | null
      * @return void
      */
-    public function notifiy(Decision $decision);
+    public function notify(Notification $decision);
 
 }

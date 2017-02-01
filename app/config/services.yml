@@ -1,0 +1,26 @@
+services:
+    database:
+        class:        Anodet\Core\Database\Database
+        arguments:    ["@connection"]
+    manager:
+        class:        Anodet\Core\Manager\Manager
+        arguments:    ["@builder","@logger"]
+    builder:
+        class:        Anodet\Core\Manager\Builder
+        arguments:    ["@service_container","@database"]
+    logger:
+        class:        \Monolog\Logger
+        arguments:    ["manager_log",["@stream_handler"]]
+    stream_handler:
+        class:        \Monolog\Handler\StreamHandler
+        arguments:    ["%monolog_handler_path%"]
+    slack_client:
+        class:        Maknz\Slack\Client
+        arguments:    ["%slack_hook%","%slack_config%"]
+    connection:
+        class:        Simplon\Mysql\Mysql
+        arguments:
+                  - "%database_host%"
+                  - "%database_user%"
+                  - "%database_password%"
+                  - "%database_name%"

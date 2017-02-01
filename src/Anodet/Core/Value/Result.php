@@ -2,32 +2,24 @@
 
 namespace Anodet\Core\Value;
 
-class Action
+
+class Result
 {
-    /** @var  string */
+    /** @var integer */
     private $code;
-    /** @var \DateTime */
-    private $datetime;
-    /** @var  array */
+    /** @var array */
     private $detail;
 
-    /**
-     * Action constructor.
-     * @param string $code
-     * @param array $detail
-     */
     public function __construct($code, $detail)
     {
         $this->code = $code;
         $this->detail = $detail;
-        $this->datetime = new \DateTime();
     }
 
     public function serialize()
     {
         return [
             'code' => $this->code,
-            'datetime' => $this->datetime->format('Y-m-d H:i:s'),
             'detail' => json_encode($this->detail),
         ];
     }
@@ -46,5 +38,21 @@ class Action
     public function getDetail()
     {
         return $this->detail;
+    }
+
+    /**
+     * @param int $code
+     */
+    public function setCode($code)
+    {
+        $this->code = $code;
+    }
+
+    /**
+     * @param array $detail
+     */
+    public function setDetail($detail)
+    {
+        $this->detail = $detail;
     }
 }

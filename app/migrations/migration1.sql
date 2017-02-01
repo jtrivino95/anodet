@@ -1,24 +1,23 @@
-CREATE TABLE `action` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `categoryHash` VARCHAR(128) DEFAULT NULL,
-  `status` TINYINT UNSIGNED NOT NULL,
-  `detail` TEXT DEFAULT NULL,
-  `behavior` TEXT DEFAULT NULL,
-  `result` TEXT DEFAULT NULL,
+CREATE TABLE `module_instance` (
+  `id`            INT(11)      NOT NULL AUTO_INCREMENT,
+  `instance_code` VARCHAR(255)          DEFAULT NULL,
+  `module_code`   VARCHAR(45)  NOT NULL,
+  `config_class`  VARCHAR(255) NOT NULL,
+  `config`        JSON                  DEFAULT NULL,
+  `is_active`     INT(11)      NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+)
+  ENGINE = InnoDB
+  AUTO_INCREMENT = 1
+  DEFAULT CHARSET = utf8_unicode_ci;
 
-
-CREATE TABLE action_summary (
-  `hash` VARCHAR(32) NOT NULL,
-  `trust` TINYINT UNSIGNED NOT NULL,
-  `summary` TEXT NOT NULL,
-  PRIMARY KEY (`hash`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
-
-CREATE TABLE config (
-  `code` VARCHAR(50) NOT NULL,
-  `value` TEXT NOT NULL,
-  PRIMARY KEY (`code`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+CREATE TABLE `action` (
+  `id`       INT(11) NOT NULL AUTO_INCREMENT,
+  `code`     VARCHAR(45)      DEFAULT NULL,
+  `detail`   JSON             DEFAULT NULL,
+  `datetime` DATETIME         DEFAULT NULL,
+  PRIMARY KEY (`id`)
+)
+  ENGINE = InnoDB
+  AUTO_INCREMENT = 7
+  DEFAULT CHARSET = utf8_unicode_ci;

@@ -8,159 +8,160 @@
 
 namespace Anodet\Core\Manager;
 
-
 use Anodet\Core\Contracts\Analyzer;
 use Anodet\Core\Contracts\Decider;
-use Anodet\Core\Contracts\Notifier;
-use Anodet\Core\Contracts\GenericParser;
-use Anodet\Core\Contracts\BaseTransporter;
-use Anodet\Core\Database\Database;
-use Anodet\Core\Value\Config;
+use Anodet\Core\Contracts\Transporter;
+use Anodet\Core\Value\Action;
+use Anodet\Core\Value\Notification;
+use Anodet\Core\Value\Result;
+use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 
 class Manager
 {
-    private $id;
-    private $parser;
-    private $deciders = [];
-    private $analyzers = [];
-    private $notifier;
-    private $database;
+    /** @var  Builder */
+    private $builder;
 
+    /** @var LoggerInterface */
+    private $logger;
 
-    /** @var array Action */
-    private $actions = [];
-    /** @var array Action */
-    private $analyzedActions = [];
-    private $decisions = [];
-    /** @var  Config */
-    private $config;
-    /** @var  \DateTime */
-    private $now;
-
-
-    /**
-     * Manager constructor.
-     * DB_Config:
-     *      host
-     *      user
-     *      password
-     *      name
-     * @param $id
-     * @param $db_config
-     */
-    public function __construct($id, $db_config)
+    public function __construct(Builder $builder, LoggerInterface $logger)
     {
-        $this->id = $id;
-        $this->database = new Database($db_config);
-
+        $this->builder = $builder;
+        $this->logger = $logger;
     }
 
-    /**
-     * @param Decider $decider
-     */
-    public function addDecider(Decider $decider)
-    {
-        $this->deciders[] = $decider;
-    }
-
-    public function addAnalyzer(Analyzer $analyzer)
-    {
-        $this->analyzers[] = $analyzer;
-    }
-
-    /**
-     * @param mixed $notifier
-     */
-    public function setNotifier(Notifier $notifier)
-    {
-        $this->notifier = $notifier;
-    }
-
-    /**
-     * @param mixed $database
-     */
-    public function setDatabase(Database $database)
-    {
-        $this->database = $database;
-        $this->config = $database->getConfig();
-    }
-
-    /**
-     * @param mixed $parser
-     */
-    public function setParser($parser)
-    {
-        $this->parser = $parser;
-    }
-
-
-    public function run(BaseTransporter $transporter)
+    public function run()
     {
 
-        $this->now = new \DateTime();
+        foreach ($this->builder->getModuleInstances() as $moduleInstance) {
 
-        if ($this->config->lastFetch == null) {
-            $actions = $transporter->initialFetch();
-        } else {
-            $actions = $transporter->fetchData($this->config->lastFetch, $this->now); // fetch from lastFetch to now
-        }
+            try {
 
-        // Now we have the actions
+                $actions = $this->runTransporter($moduleInstance);
 
-        /*
-         * Parses raw Actions to clean Actions
-         */
-        foreach ($actions as $action) {
-            $parses = [];
+                $results = $this->runAnalyzers($moduleInstance, $actions);
 
-            if ($this->transporter->supports($action)) {
-                $parses[] = $this->transporter->parse($action);
+                $notifications = $this->runDeciders($moduleInstance, $results);
+
+                $this->sendNotifications($notifications);
+
+                $this->builder->saveConfig();
+
+            } catch (\Exception $e) {
+
+                $this->logger->critical($e->getMessage());
+
             }
-
-            $this->actions = $parses;
         }
 
-        // Now we have parsed actions
 
-        /*
-         * For each analyzer, and for each action, we get the decision.
-         */
-        foreach ($this->analyzers as $analyzer) {
+    }
+
+    /**
+     * @return Action[]
+     */
+    private function runTransporter($moduleInstance)
+    {
+
+        $actions = [];
+
+        /** @var Transporter $transporter */
+        $transporter = $this->builder->build($moduleInstance, 'transporter');
+
+        if (sizeof($transporter) > 1) $this->logger->warning("Error on " . $moduleInstance['module_code'] . ": only 1 transporter per code allowed. Using " . get_class($transporter[0]) . "\n");
+
+        $transporter = $transporter[0];
+
+        $transporter->prepare();
+
+        foreach ($transporter->fetch() as $action) {
+
+            $actions[] = $action;
+
+        }
+
+        return $actions;
+
+    }
+
+    /**
+     * @param $actions Action[]
+     * @return Result[]
+     */
+    private function runAnalyzers($moduleInstance, $actions)
+    {
+
+        $results = [];
+
+        /** @var Analyzer[] $analyzers */
+        $analyzers = $this->builder->build($moduleInstance, 'analyzer');
+
+        foreach ($analyzers as $analyzer) {
+
+            $supportedActions = [];
+
             foreach ($actions as $action) {
-
-                // Analyzer work
-                if ($analyzer->supports($action)) {
-                    $analyzer->analyze($action); // Attributes of action has been modified?
-                }
-
-                // Decider work
-                foreach ($this->deciders as $decider) {
-                    if ($decider->supports($action)) {
-                        $this->decisions[] = $decider->decide($action);
-                    }
-                }
-
-                // Notifier work
-                if (sizeof($this->decisions) != 0) {
-                    foreach ($this->decisions as $decision) {
-                        $this->notifier->notify($decision);
-                    }
+                if ($action && $analyzer->supports($action)) {
+                    $supportedActions[] = $action;
                 }
             }
+
+            foreach ($analyzer->analyze($supportedActions) as $result) {
+                $results[] = $result;
+            }
+
+
         }
 
-        // End of cicle
-
-
-        /*
-         * Set up the time of the last fetch on DB
-         */
-        $this->config->lastFetch = $this->now;
-
-        $this->database->updateConfig($this->config);
-
+        return $results;
 
     }
 
+
+    /**
+     * @param $results
+     * @return Notification[]
+     */
+    private function runDeciders($moduleInstance, $results)
+    {
+
+        $decisions = [];
+
+        $deciders = $this->builder->build($moduleInstance, 'decider');
+
+        /** @var Decider $decider */
+        foreach ($deciders as $decider) {
+
+            foreach ($results as $result) {
+
+                if ($decider->supports(($result))) {
+
+                    if ($result = $decider->decide($result)) {
+                        $decisions[] = $result;
+                    }
+
+                }
+
+            }
+
+        }
+
+        return $decisions;
+
+    }
+
+    /**
+     * @param $decisions Notification[]
+     * @throws \Exception
+     */
+    private function sendNotifications($decisions)
+    {
+
+        foreach ($decisions as $decision) {
+            $this->builder->getNotifier($decision->getChannel())->notify($decision);
+        }
+
+    }
 
 }
