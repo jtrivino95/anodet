@@ -8,13 +8,11 @@ interface Notifier
 {
     const NOTIFIERS = [
         'slack' => 'slack.notifier',
-        'mail' => 'mail.notifier',
     ];
 
     /**
      * Send the decision info via $decision->getChannel()
-     * @param Notification $decision | null
-     * @return void
+     * @param Notification $decision
      */
     public function notify(Notification $decision);
 
