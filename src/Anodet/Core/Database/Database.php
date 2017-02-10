@@ -42,22 +42,6 @@ class Database
 
     }
 
-    /**
-     * @param $code
-     * @return array|null
-     */
-    public function getData($code)
-    {
-
-        if ($data = $this->connection->fetchRow("SELECT * FROM module_instance WHERE module_code = :code", ['code' => $code])) {
-            $data['config'] = json_decode($data['config'], 1);
-            return $data;
-        } else {
-            return null;
-        }
-
-    }
-
     public function exists($code)
     {
         if ($this->connection->fetchRow("SELECT module_code FROM module_instance WHERE module_code = :code", ['code' => $code])) {
@@ -80,25 +64,6 @@ class Database
                 ['config' => json_encode($config)]
             );
         }
-    }
-
-    /**
-     * @param $code
-     * @return array
-     */
-    public function getConfigs($code)
-    {
-        $configs = $this->connection->fetchRowMany("SELECT id, config_class, config FROM module_instance WHERE module_code = :code", ['code' => $code]);
-
-        if ($configs) {
-            foreach ($configs as &$config) {
-                $config['config'] = json_decode($config['config'], 1);
-            }
-        } else {
-            $configs = [];
-        }
-
-        return $configs;
     }
 
 

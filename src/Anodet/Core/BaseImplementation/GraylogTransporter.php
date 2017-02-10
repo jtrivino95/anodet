@@ -79,7 +79,7 @@ abstract class GraylogTransporter extends BaseTransporter
         $this->httpQuery['to'] = (new \DateTime('now'))->format('Y-m-d H:i:s');
         $this->httpQuery['query'] = $this->config->query;
         $this->httpQuery['fields'] = $this->config->fields;
-//        $this->httpQuery['limit'] = $this->config->MAX_ROWS_TO_FETCH;
+//        if($this->config->MAX_ROWS_TO_FETCH) $this->httpQuery['limit'] = $this->config->MAX_ROWS_TO_FETCH;
         $this->httpQuery = http_build_query($this->httpQuery);
     }
 }

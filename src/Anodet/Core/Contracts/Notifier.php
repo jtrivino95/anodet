@@ -12,8 +12,8 @@ interface Notifier
 
     /**
      * Send the decision info via $decision->getChannel()
-     * @param Notification $decision
+     * @param Notification $notification
      */
-    public function notify(Notification $decision);
+    public function notify(Notification $notification);
 
 }

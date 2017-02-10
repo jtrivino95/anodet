@@ -12,7 +12,6 @@ namespace Anodet\Implementation\Notifier;
 use Anodet\Core\Contracts\Notifier;
 use Anodet\Core\Value\Notification;
 use Maknz\Slack\Client;
-use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 
 
@@ -28,13 +27,13 @@ class SlackNotifier implements Notifier
     }
 
     /**
-     * @param Notification $decision
+     * @param Notification $notification
      * @return void
      */
-    public function notify(Notification $decision)
+    public function notify(Notification $notification)
     {
         $this->logger->info("Sending notification with Slack to " . $this->client->getDefaultChannel() . "\n");
-        $this->client->to($this->client->getDefaultChannel())->send("Level: " . ($decision->getLevelString()) . "\n" . "Message:\n " . $decision->getMessage());
+        $this->client->to($this->client->getDefaultChannel())->send("Level: " . ($notification->getLevelString()) . "\n" . "Message:\n " . $notification->getMessage());
     }
 
 }

@@ -120,13 +120,14 @@ class Manager
 
 
     /**
+     * @param $moduleInstance
      * @param $results
      * @return Notification[]
      */
     private function runDeciders($moduleInstance, $results)
     {
 
-        $decisions = [];
+        $notifications = [];
 
         $deciders = $this->builder->build($moduleInstance, 'decider');
 
@@ -135,10 +136,10 @@ class Manager
 
             foreach ($results as $result) {
 
-                if ($decider->supports(($result))) {
+                if ($decider->supports($result)) {
 
-                    if ($result = $decider->decide($result)) {
-                        $decisions[] = $result;
+                    if ($notification = $decider->decide($result)) {
+                        $notifications[] = $notification;
                     }
 
                 }
@@ -147,19 +148,19 @@ class Manager
 
         }
 
-        return $decisions;
+        return $notifications;
 
     }
 
     /**
-     * @param $decisions Notification[]
+     * @param $notifications Notification[]
      * @throws \Exception
      */
-    private function sendNotifications($decisions)
+    private function sendNotifications($notifications)
     {
 
-        foreach ($decisions as $decision) {
-            $this->builder->getNotifier($decision->getChannel())->notify($decision);
+        foreach ($notifications as $notification) {
+            $this->builder->getNotifier($notification->getChannel())->notify($notification);
         }
 
     }

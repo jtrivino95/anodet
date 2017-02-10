@@ -11,6 +11,9 @@
       "symfony/yaml": "^3.2",
       "symfony/console": "^3.2"
     },
+  "require-dev": {
+    "amenadiel/jpgraph": "^3.6"
+  },
     "autoload": {
         "psr-4": {
             "": "src/"

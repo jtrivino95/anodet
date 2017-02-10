@@ -4,6 +4,7 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Anodet\Core\Manager\Manager;
 
 class AppKernel
 {
@@ -28,6 +29,8 @@ class AppKernel
 
     public function boot()
     {
-        $this->container->get('manager')->run();
+        /** @var Manager $manager */
+        $manager = $this->container->get('manager');
+        $manager->run();
     }
 }
