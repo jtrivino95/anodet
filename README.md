@@ -77,5 +77,9 @@ You can use next command:
 
     php app/main.php boot
 
-
 Note that if any interface fails, the manager will skip the instance without saving config changes and run the next one.
+
+
+More info
+--------------
+<https://knowledge.trivago.com/display/~jtrivino/Anodet>
