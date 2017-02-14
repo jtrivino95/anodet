@@ -2,4 +2,6 @@
 /.idea
 /app/config/parameters.yml
 /app/config/modules.yml
-app/log/
+/app/log/
+/presentation
+/src/Anodet/Implementation
