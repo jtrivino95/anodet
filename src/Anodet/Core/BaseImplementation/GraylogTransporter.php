@@ -14,14 +14,8 @@ use Anodet\Implementation\Config\GraylogConfig;
 
 abstract class GraylogTransporter extends BaseTransporter
 {
-
-    /** @var  GraylogConfig */
-    protected $config;
     /** @var Logger */
     private $logger;
-
-    private $graylog_logs = null;
-    private $httpQuery;
 
     function __construct(Logger $logger)
     {
@@ -29,57 +23,62 @@ abstract class GraylogTransporter extends BaseTransporter
     }
 
     /**
+     * @param GraylogConfig $config
      * @return array
      */
-    public function fetchFromGraylog()
+    public function fetchFromGraylog(GraylogConfig $config)
     {
-        // if there are more than two instances, it is not necessary to call rest api twice
-        if (!$this->graylog_logs) {
 
-            $curl = curl_init($this->config->url);
+        $this->graylog_logs = [];
+        $httpQuery = $this->makeHttpQuery($config);
 
-            curl_setopt_array($curl, array(
-                CURLOPT_RETURNTRANSFER => 1,
-                CURLOPT_URL => $this->config->url . '/search/universal/absolute?' . $this->httpQuery,
-                CURLOPT_USERPWD => $this->config->user . ":" . $this->config->password,
-                CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
-            ));
 
-            $response = curl_exec($curl);
+        $curl = curl_init($config->url);
 
-            curl_close($curl);
+        curl_setopt_array($curl, array(
+            CURLOPT_RETURNTRANSFER => 1,
+            CURLOPT_URL => $config->url . '/search/universal/absolute?' . $httpQuery,
+            CURLOPT_USERPWD => $config->user . ":" . $config->password,
+            CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
+        ));
 
-            // Convert CSV to Array
-            $logs = [];
-            $lines = explode(PHP_EOL, $response);
-            foreach ($lines as $line) {
-                $logs[] = str_getcsv($line);
-            }
-            $this->graylog_logs = $logs;
+        $response = curl_exec($curl);
+
+        curl_close($curl);
+
+
+        // Convert CSV to Array
+        $logs = [];
+        $lines = explode(PHP_EOL, $response);
+        foreach ($lines as $line) {
+            $logs[] = str_getcsv($line);
         }
 
-        $this->logger->info("GraylogTransporter returned " . sizeof($this->graylog_logs) . " logs of " . $this->config->interval_days . " days ago.");
+        $this->logger->info("GraylogTransporter returned " . sizeof($logs) . " logs of " . $config->interval_days . " days ago.");
 
-        return $this->graylog_logs;
+        return $logs;
     }
 
     /**
-     * {@inheritdoc}
+     * @param GraylogConfig $config
+     * @return array
+     * @throws \Exception
      */
-    public function setConfig(Config $config)
+    public function makeHttpQuery(GraylogConfig $config)
     {
-        $this->config = $config;
 
-        if (!$this->config->query || !$this->config->fields || !$this->config->interval_days) {
+        if (!$config->query || !$config->fields || !$config->interval_days) {
             throw new \Exception("Attribute 'query', 'fields' or 'interval_days' are null. Please, specify them.");
         }
 
-        $this->httpQuery = [];
-        $this->httpQuery['from'] = ((new \DateTime('now'))->sub(new \DateInterval("P" . $this->config->interval_days . "D")))->format('Y-m-d H:i:s');
-        $this->httpQuery['to'] = (new \DateTime('now'))->format('Y-m-d H:i:s');
-        $this->httpQuery['query'] = $this->config->query;
-        $this->httpQuery['fields'] = $this->config->fields;
-//        if($this->config->MAX_ROWS_TO_FETCH) $this->httpQuery['limit'] = $this->config->MAX_ROWS_TO_FETCH;
-        $this->httpQuery = http_build_query($this->httpQuery);
+        $httpQuery = [];
+        $httpQuery['from'] = ((new \DateTime('now'))->sub(new \DateInterval("P" . $config->interval_days . "D")))->format('Y-m-d H:i:s');
+        $httpQuery['to'] = (new \DateTime('now'))->format('Y-m-d H:i:s');
+        $httpQuery['query'] = $config->query;
+        $httpQuery['fields'] = $config->fields;
+//      $this->httpQuery['limit'] = $this->config->MAX_ROWS_TO_FETCH;
+
+        return http_build_query($httpQuery);
     }
+
 }

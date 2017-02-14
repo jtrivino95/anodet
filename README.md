@@ -40,7 +40,7 @@ The manager needs to know which modules are implemented and how many times needs
 | Field            |           Description                                                            |  
 | ---------------- | ---------------------------------------------------------------------------------|
 | instance_code    |   custom string to easily identify each instance. It is not used by the manager. |
-| module_code      |   code associated to the module(i.e: HttpAccessLog)                              |
+| module_code      |   code associated to the module(i.e: http_error_log)                              |
 | config_class     |   Class which contains the configuration attributes                              |
 | config           |   json-encoded config values                                                     |
 | is_active        |   manager will skip instances with is_active==0                                  |
@@ -66,7 +66,7 @@ uptime.transporter:                                                         # Na
       class:      Anodet\Implementation\Transporter\UptimeTransporter
       arguments:  ["@database"]                                             # You can inject a service, like the database, if you want
       tags:
-                  - { name: transporter, code: cpu }                        # 'name' contains the interface of module {transporter, analyzer, decider}, 'code' is used forr know the configuration class associated
+                  - { name: transporter, code: cpu }                        # 'name' contains the interface of module {transporter, analyzer, decider}, 'code' is used for know the configuration class associated
 ```
 
 Fourth step
@@ -76,8 +76,12 @@ Run it!
 You can use next command:
 
     php app/main.php boot
+    
+Notes
+--------------
 
-Note that if any interface fails, the manager will skip the instance without saving config changes and run the next one.
+1. If any interface fails, the manager will skip the module instance workflow without saving config changes and run the next one.
+2. Transporter, Analyzer, etc. objects are reused. It is necessary to clean the values of the class variables somewhere.
 
 
 More info
