@@ -25,13 +25,19 @@ abstract class GraylogTransporter extends BaseTransporter
     /**
      * @param GraylogConfig $config
      * @return array
+     * @throws \Exception
      */
     public function fetchFromGraylog(GraylogConfig $config)
     {
 
+        foreach ($config as $field => $value){
+
+            if($value == null) throw new \Exception("Attribute $field is null. Please, specify it.");
+
+        }
+
         $this->graylog_logs = [];
         $httpQuery = $this->makeHttpQuery($config);
-
 
         $curl = curl_init($config->url);
 
@@ -67,16 +73,13 @@ abstract class GraylogTransporter extends BaseTransporter
     public function makeHttpQuery(GraylogConfig $config)
     {
 
-        if (!$config->query || !$config->fields || !$config->interval_days) {
-            throw new \Exception("Attribute 'query', 'fields' or 'interval_days' are null. Please, specify them.");
-        }
-
         $httpQuery = [];
+
         $httpQuery['from'] = ((new \DateTime('now'))->sub(new \DateInterval("P" . $config->interval_days . "D")))->format('Y-m-d H:i:s');
         $httpQuery['to'] = (new \DateTime('now'))->format('Y-m-d H:i:s');
         $httpQuery['query'] = $config->query;
         $httpQuery['fields'] = $config->fields;
-//      $this->httpQuery['limit'] = $this->config->MAX_ROWS_TO_FETCH;
+//      $httpQuery['limit'] = $config->MAX_ROWS_TO_FETCH;
 
         return http_build_query($httpQuery);
     }
